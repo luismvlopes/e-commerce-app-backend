@@ -1,4 +1,4 @@
-package com.youtube.e_commerce_backend.api.model;
+package com.youtube.e_commerce_backend.api.dtos;
 
 import jakarta.validation.constraints.*;
 import lombok.Getter;

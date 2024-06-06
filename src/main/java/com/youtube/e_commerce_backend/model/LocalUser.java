@@ -1,6 +1,7 @@
 package com.youtube.e_commerce_backend.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -23,6 +24,7 @@ public class LocalUser {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(name = "password", nullable = false, length = 1000)
     //@Transient
     private String password;
@@ -36,6 +38,7 @@ public class LocalUser {
     @Column(name = "lastName", nullable = false)
     private String lastName;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
 
