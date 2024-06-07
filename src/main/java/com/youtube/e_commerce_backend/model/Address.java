@@ -31,9 +31,6 @@ public class Address {
     @Column(name = "country", nullable = false)
     private String country;
 
-    @Column(name = "zipCode", nullable = false, length = 75)
-    private String zipCode;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private LocalUser user;
