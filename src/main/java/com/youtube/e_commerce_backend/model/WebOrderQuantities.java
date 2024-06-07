@@ -22,7 +22,7 @@ public class WebOrderQuantities {
     private Integer quantity;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "web_order_id", nullable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private WebOrder webOrder;
 
 }
