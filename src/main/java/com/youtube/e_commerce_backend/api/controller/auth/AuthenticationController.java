@@ -1,9 +1,8 @@
 package com.youtube.e_commerce_backend.api.controller.auth;
 
-import com.youtube.e_commerce_backend.api.dtos.LoginBody;
-import com.youtube.e_commerce_backend.api.dtos.LoginResponse;
-import com.youtube.e_commerce_backend.api.dtos.RegistrationBody;
-import com.youtube.e_commerce_backend.exception.LoginFailedException;
+import com.youtube.e_commerce_backend.api.model.LoginBody;
+import com.youtube.e_commerce_backend.api.model.LoginResponse;
+import com.youtube.e_commerce_backend.api.model.RegistrationBody;
 import com.youtube.e_commerce_backend.exception.UserAlreadyExistsException;
 import com.youtube.e_commerce_backend.model.LocalUser;
 import com.youtube.e_commerce_backend.services.UserService;

@@ -1,4 +1,4 @@
-package com.youtube.e_commerce_backend.api.dtos;
+package com.youtube.e_commerce_backend.api.model;
 
 import lombok.Getter;
 import lombok.Setter;

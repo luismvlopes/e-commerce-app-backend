@@ -2,7 +2,7 @@ package com.youtube.e_commerce_backend.api.security;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.youtube.e_commerce_backend.model.LocalUser;
-import com.youtube.e_commerce_backend.model.repository.LocalUserRepository;
+import com.youtube.e_commerce_backend.model.dao.LocalUserDAO;
 import com.youtube.e_commerce_backend.services.JwtTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,11 +22,11 @@ import java.util.Optional;
 public class JWTRequestFilter extends OncePerRequestFilter {
 
     private JwtTokenService JwtTokenService;
-    private LocalUserRepository localUserRepository;
+    private LocalUserDAO localUserDAO;
 
     public JWTRequestFilter(JwtTokenService JWTTokenService,
-                            LocalUserRepository localUserRepository) {
-        this.localUserRepository = localUserRepository;
+                            LocalUserDAO localUserDAO) {
+        this.localUserDAO = localUserDAO;
         this.JwtTokenService = JWTTokenService;
     }
     @Override
@@ -37,7 +37,7 @@ public class JWTRequestFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             try {
                 String username = JwtTokenService.getUsername(token);
-                Optional<LocalUser> optUser = localUserRepository.findByUsernameIgnoreCase(username); //<11>
+                Optional<LocalUser> optUser = localUserDAO.findByUsernameIgnoreCase(username); //<11>
                 if (optUser.isPresent()) {
                     LocalUser user = optUser.get();
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());

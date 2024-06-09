@@ -1,10 +1,10 @@
 package com.youtube.e_commerce_backend.services;
 
-import com.youtube.e_commerce_backend.api.dtos.LoginBody;
-import com.youtube.e_commerce_backend.api.dtos.RegistrationBody;
+import com.youtube.e_commerce_backend.api.model.LoginBody;
+import com.youtube.e_commerce_backend.api.model.RegistrationBody;
 import com.youtube.e_commerce_backend.exception.UserAlreadyExistsException;
 import com.youtube.e_commerce_backend.model.LocalUser;
-import com.youtube.e_commerce_backend.model.repository.LocalUserRepository;
+import com.youtube.e_commerce_backend.model.dao.LocalUserDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,14 +12,14 @@ import java.util.Optional;
 @Service
 public class UserService {
 
-    private LocalUserRepository localUserRepository;
+    private LocalUserDAO localUserRepository;
     private EncryptionService encryptionService;
     private JwtTokenService jwtService;
 
-    public UserService(LocalUserRepository localUserRepository,
+    public UserService(LocalUserDAO localUserDAO,
                        JwtTokenService jwtService,
                        EncryptionService encryptionService) {
-        this.localUserRepository = localUserRepository;
+        this.localUserRepository = localUserDAO;
         this.encryptionService = encryptionService;
         this.jwtService = jwtService;
     }
