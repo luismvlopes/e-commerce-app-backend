@@ -21,6 +21,7 @@ public class JwtTokenService {
     private String expirationInSeconds;
     private Algorithm algorithm;
     private static final String USERNAME = "USERNAME";
+    private static final String EMAIL_KEY = "EMAIL_KEY";
 
     @PostConstruct
     public void postConstruct() {
@@ -40,4 +41,12 @@ public class JwtTokenService {
         return JWT.decode(token).getClaim(USERNAME).asString();
     }
 
+    public String generateVerificationToken(LocalUser user) {
+        return JWT.create()
+                .withClaim(EMAIL_KEY, user.getEmail())
+                .withIssuer(issuer)
+                .withIssuedAt(Date.from(Instant.now()))
+                .withExpiresAt(Date.from(Instant.now().plusSeconds(1000 + Long.parseLong(expirationInSeconds))))
+                .sign(algorithm);
+    }
 }
