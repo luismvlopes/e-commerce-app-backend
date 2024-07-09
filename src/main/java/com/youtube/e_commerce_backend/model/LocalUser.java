@@ -32,10 +32,10 @@ public class LocalUser {
     @Column(name = "email", nullable = false, unique = true, length = 1000)
     private String email;
 
-    @Column(name = "firstName", nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "lastName", nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @JsonIgnore

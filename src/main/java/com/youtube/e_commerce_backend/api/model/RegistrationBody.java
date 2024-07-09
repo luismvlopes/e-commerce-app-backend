@@ -2,8 +2,10 @@ package com.youtube.e_commerce_backend.api.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class RegistrationBody {
 
     @NotNull
