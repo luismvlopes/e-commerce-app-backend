@@ -3,8 +3,13 @@ package com.youtube.e_commerce_backend.service;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
+import com.youtube.e_commerce_backend.api.model.LoginBody;
 import com.youtube.e_commerce_backend.api.model.RegistrationBody;
+import com.youtube.e_commerce_backend.exception.EmailFailureException;
 import com.youtube.e_commerce_backend.exception.UserAlreadyExistsException;
+import com.youtube.e_commerce_backend.exception.UserNotVerifiedException;
+import com.youtube.e_commerce_backend.model.VerificationToken;
+import com.youtube.e_commerce_backend.model.dao.VerificationTokenDAO;
 import com.youtube.e_commerce_backend.services.UserService;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -17,7 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-//@Disabled
+import java.util.List;
+
+
 @SpringBootTest
 public class UserServiceTest {
 
@@ -30,6 +37,8 @@ public class UserServiceTest {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private VerificationTokenDAO verificationTokenDAO;
 
     @Test
     @Transactional
@@ -55,6 +64,55 @@ public class UserServiceTest {
                 "User should be able to register successfully");
         Assertions.assertEquals(body.getEmail(),
                 greenMail.getReceivedMessages()[0].getRecipients(Message.RecipientType.TO)[0].toString());
+    }
+
+    @Test
+    @Transactional
+    public void testLoginUser() throws UserNotVerifiedException, EmailFailureException {
+        LoginBody body = new LoginBody();
+        body.setUsername("UserA-NotExist");
+        body.setPassword("PasswordA123-BadPassword");
+        Assertions.assertNull(userService.loginUser(body), "The user should not exist");
+        body.setUsername("UserA");
+        body.setPassword("PasswordA123");
+        Assertions.assertNotNull(userService.loginUser(body), "The password should be incorrect");
+        body.setPassword("PasswordA123");
+        Assertions.assertNotNull(userService.loginUser(body), "The user should login successfully");
+        body.setUsername("UserB");
+        body.setPassword("PasswordB123");
+        try {
+            userService.loginUser(body);
+            Assertions.fail("The user should not have email verified");
+        } catch (UserNotVerifiedException ex) {
+            Assertions.assertTrue(ex.isNewEmailSent(), "Email verification should be sent");
+            Assertions.assertEquals(1, greenMail.getReceivedMessages().length);
+        }
+        try {
+            userService.loginUser(body);
+            Assertions.fail("The user should not have email verified");
+        } catch (UserNotVerifiedException ex) {
+            Assertions.assertFalse(ex.isNewEmailSent(), "Email verification should be resent");
+            Assertions.assertEquals(1, greenMail.getReceivedMessages().length);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void testVerifyUser() throws EmailFailureException {
+        Assertions.assertFalse(userService.verifyUserEmail("invalid_token"),
+                    "This test token should not be valid and return false");
+        LoginBody body = new LoginBody();
+        body.setUsername("UserB");
+        body.setPassword("PasswordB123");
+        try {
+            userService.loginUser(body);
+            Assertions.fail("The user should not have email verified");
+        } catch (UserNotVerifiedException ex) {
+            List<VerificationToken> tokens = verificationTokenDAO.findByUser_IdOrderByUser_IdDesc(2L);
+            String token = tokens.get(0).getToken();
+            Assertions.assertTrue(userService.verifyUserEmail(token), "The token should be valid and return true");
+            Assertions.assertNotNull(body, "The user should be verified");
+        }
     }
 
 }

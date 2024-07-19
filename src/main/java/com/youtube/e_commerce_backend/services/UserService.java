@@ -38,6 +38,14 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Registers a new user using the provided registration details.
+     *
+     * @param  registrationBody   the registration details of the user
+     * @return                   the newly registered user
+     * @throws UserAlreadyExistsException  if the user already exists
+     * @throws EmailFailureException       if there is an issue with email sending
+     */
     public LocalUser registerUser(RegistrationBody registrationBody) throws UserAlreadyExistsException, EmailFailureException {
 
         if (localUserDAO.findByEmailIgnoreCase(registrationBody.getEmail()).isPresent()
@@ -57,6 +65,12 @@ public class UserService {
         return user;
     }
 
+    /**
+     * Creates a verification token for the provided user.
+     *
+     * @param  user   the user for whom the verification token is created
+     * @return       the generated verification token
+     */
     private VerificationToken createVerificationToken(LocalUser user) {
         VerificationToken token = new VerificationToken();
         token.setToken(jwtService.generateVerificationToken(user));
@@ -66,6 +80,14 @@ public class UserService {
         return token;
     }
 
+    /**
+     * Logs in a user based on the provided login details.
+     *
+     * @param  loginBody   the login details of the user
+     * @return             the generated JWT token upon successful login
+     * @throws UserNotVerifiedException  if the user is not verified
+     * @throws EmailFailureException      if there is an issue with email sending during login
+     */
     public String loginUser(LoginBody loginBody) throws UserNotVerifiedException, EmailFailureException {
         Optional<LocalUser> optUser = localUserDAO.findByUsernameIgnoreCase(loginBody.getUsername());
         if (optUser.isPresent() && encryptionService.verifyPassword(loginBody.getPassword(), optUser.get().getPassword())) {
