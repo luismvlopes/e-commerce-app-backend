@@ -99,3 +99,6 @@ This is an e-commerce application developed in Java with Spring Boot. It allows 
 3. **Access Protected Endpoints:**
     - Use the JWT token in the header of requests to access protected endpoints (Products and Orders).
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
