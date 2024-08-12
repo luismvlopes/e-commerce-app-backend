@@ -25,7 +25,7 @@ public class JwtTokenService {
     private static final String EMAIL_KEY = "EMAIL_KEY";
 
     @PostConstruct
-    public void postConstruct() {
+    public void initAlgorithm() {
         this.algorithm = Algorithm.HMAC256(algorithmKey);
     }
 
@@ -39,7 +39,7 @@ public class JwtTokenService {
     }
 
     public String getUsername(String token) {
-        DecodedJWT jwt = JWT.require(algorithm).build().verify(token);
+        DecodedJWT jwt = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
         return jwt.getClaim(USERNAME).asString();
     }
 
