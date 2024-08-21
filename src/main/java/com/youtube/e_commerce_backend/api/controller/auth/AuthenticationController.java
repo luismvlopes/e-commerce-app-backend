@@ -3,7 +3,9 @@ package com.youtube.e_commerce_backend.api.controller.auth;
 import com.youtube.e_commerce_backend.api.model.LoginBody;
 import com.youtube.e_commerce_backend.api.model.LoginResponse;
 import com.youtube.e_commerce_backend.api.model.RegistrationBody;
+import com.youtube.e_commerce_backend.api.model.ResetPasswordBody;
 import com.youtube.e_commerce_backend.exception.EmailFailureException;
+import com.youtube.e_commerce_backend.exception.EmailNotFoundException;
 import com.youtube.e_commerce_backend.exception.UserAlreadyExistsException;
 import com.youtube.e_commerce_backend.exception.UserNotVerifiedException;
 import com.youtube.e_commerce_backend.model.LocalUser;
@@ -74,6 +76,24 @@ public class AuthenticationController {
     @GetMapping("/me")
     public ResponseEntity<LocalUser> getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity forgotPassword(@RequestParam String email) throws EmailNotFoundException, EmailFailureException {
+       try {
+           userService.forgotPassword(email);
+           return ResponseEntity.ok().build();
+       } catch (EmailNotFoundException e) {
+           return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+       } catch (EmailFailureException e) {
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+       }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity resetPassword(@RequestBody @Valid ResetPasswordBody body) {
+            userService.resetPassword(body);
+            return ResponseEntity.ok().build();
     }
 
 }

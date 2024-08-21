@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: e-commerce-backend
+
+  datasource:
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: jdbc:sqlserver://${DB_HOST};databaseName=${DB_NAME};encrypt=true;trustservercertificate=true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  mail:
+    host: localhost
+    port: 25
+    #username:
+    #password:
+    #properties:
+    #  mail:
+    #    smtp:
+    #      auth: true
+    #      starttls:
+    #        enable: true
+
+# JWT configuration
+encryption:
+  salt:
+    round: 10
+
+jwt:
+  algorithm:
+    key: SuperSecureSecretKey
+  issuer: eCommerce
+  expirationInSeconds: 604800
+
+# Email configuration
+email:
+  from: no-reply@ecommerce.com
+
+# General configuration
+app:
+  frontend:
+    url: http://ecommerce.com

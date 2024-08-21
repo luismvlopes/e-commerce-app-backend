@@ -1,6 +1,7 @@
 package com.youtube.e_commerce_backend.services;
 
 import com.youtube.e_commerce_backend.exception.EmailFailureException;
+import com.youtube.e_commerce_backend.model.LocalUser;
 import com.youtube.e_commerce_backend.model.VerificationToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
@@ -33,6 +34,19 @@ public class EmailService {
         message.setSubject("Verify your email to activate your account");
         message.setText("Please follow the link below to activate your account: \n"
                 + frontendUrl + "/auth/verify?token=" + token.getToken());
+        try {
+            mailSender.send(message);
+        } catch (MailException ex) {
+            throw new EmailFailureException();
+        }
+    }
+
+    public void sendPasswordResetEmail(LocalUser user, String token) throws EmailFailureException {
+        SimpleMailMessage message = makeMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject("Link to Reset your password");
+        message.setText("Please follow the link below to reset your password: \n"
+                + frontendUrl + "/auth/reset-password?token=" + token);
         try {
             mailSender.send(message);
         } catch (MailException ex) {

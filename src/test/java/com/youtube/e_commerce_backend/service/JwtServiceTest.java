@@ -2,7 +2,6 @@ package com.youtube.e_commerce_backend.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.MissingClaimException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.youtube.e_commerce_backend.model.LocalUser;
@@ -18,7 +17,7 @@ import com.youtube.e_commerce_backend.services.JwtTokenService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class JwtTokenServiceTest {
+public class JwtServiceTest {
 
     @Autowired
     private JwtTokenService jwtTokenService;
@@ -47,7 +46,7 @@ public class JwtTokenServiceTest {
     }
 
     @Test
-    public void testJWTGeneratedByOutsiders() {
+    public void testLoginJWTGeneratedByOutsiders() {
         String token =
                 JWT.create().withClaim("USERNAME", "UserA")
                         .sign(Algorithm.HMAC256("NotRealSecretKey"));
@@ -58,10 +57,37 @@ public class JwtTokenServiceTest {
     }
 
     @Test
-    public void testJWTCorrectlySignedNoIssuer() {
+    public void testJLoginWTCorrectlySignedNoIssuer() {
 
         String token = JWT.create().withClaim("USERNAME", "UserA")
                 .sign(Algorithm.HMAC256(algorithmKey));
         Assertions.assertThrows(MissingClaimException.class, () -> jwtTokenService.getUsername(token));
+    }
+
+    @Test
+    public void testPasswordResetToken() {
+        LocalUser user = localUserDAO.findByUsernameIgnoreCase("UserA").get();
+        String token = jwtTokenService.generatePasswordResetToken(user);
+        Assertions.assertEquals(user.getEmail(), jwtTokenService.getResetPasswordEmail(token),
+                "Token for password reset should contain user's email");
+    }
+
+    @Test
+    public void testResetPasswordJWTGeneratedByOutsiders() {
+        String token =
+                JWT.create().withClaim("RESET_PASSWORD_EMAIL", "UserA@junit.com")
+                        .sign(Algorithm.HMAC256("NotRealSecretKey"));
+
+        Assertions.assertThrows(
+                SignatureVerificationException.class,
+                () -> jwtTokenService.getResetPasswordEmail(token));
+    }
+
+    @Test
+    public void testJResetPasswordWTCorrectlySignedNoIssuer() {
+
+        String token = JWT.create().withClaim("RESET_PASSWORD_EMAIL", "UserA@junit.com")
+                .sign(Algorithm.HMAC256(algorithmKey));
+        Assertions.assertThrows(MissingClaimException.class, () -> jwtTokenService.getResetPasswordEmail(token));
     }
 }

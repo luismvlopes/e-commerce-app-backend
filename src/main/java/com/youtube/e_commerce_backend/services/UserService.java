@@ -2,7 +2,9 @@ package com.youtube.e_commerce_backend.services;
 
 import com.youtube.e_commerce_backend.api.model.LoginBody;
 import com.youtube.e_commerce_backend.api.model.RegistrationBody;
+import com.youtube.e_commerce_backend.api.model.ResetPasswordBody;
 import com.youtube.e_commerce_backend.exception.EmailFailureException;
+import com.youtube.e_commerce_backend.exception.EmailNotFoundException;
 import com.youtube.e_commerce_backend.exception.UserAlreadyExistsException;
 import com.youtube.e_commerce_backend.exception.UserNotVerifiedException;
 import com.youtube.e_commerce_backend.model.LocalUser;
@@ -123,5 +125,28 @@ public class UserService {
             }
         }
         return false;
+    }
+
+    public void forgotPassword(String email) throws EmailNotFoundException, EmailFailureException {
+        Optional<LocalUser> optUser = localUserDAO.findByEmailIgnoreCase(email);
+        if(optUser.isPresent()) {
+            LocalUser user = optUser.get();
+            String token = jwtService.generatePasswordResetToken(user);
+            emailService.sendPasswordResetEmail(user, token);
+
+        } else {
+            throw new EmailNotFoundException();
+        }
+    }
+
+    public void resetPassword(ResetPasswordBody body) {
+        String email = jwtService.getResetPasswordEmail(body.getToken());
+        Optional<LocalUser> optUser = localUserDAO.findByEmailIgnoreCase(email);
+        if(optUser.isPresent()) {
+            LocalUser user = optUser.get();
+            user.setPassword(encryptionService.encryptPassword(body.getPassword()));
+            localUserDAO.save(user);
+            //verificationTokenDAO.deleteByUser(user);
+        }
     }
 }

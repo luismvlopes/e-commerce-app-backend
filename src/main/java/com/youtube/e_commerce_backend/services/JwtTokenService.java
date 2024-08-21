@@ -22,7 +22,9 @@ public class JwtTokenService {
     private String expirationInSeconds;
     private Algorithm algorithm;
     private static final String USERNAME = "USERNAME";
-    private static final String EMAIL_KEY = "EMAIL_KEY";
+    private static final String VERIFICATION_EMAIL_KEY = "VERIFICATION_EMAIL";
+    private static final String RESET_PASSWORD_EMAIL_KEY = "RESET_PASSWORD_EMAIL";
+
 
     @PostConstruct
     public void initAlgorithm() {
@@ -45,10 +47,24 @@ public class JwtTokenService {
 
     public String generateVerificationToken(LocalUser user) {
         return JWT.create()
-                .withClaim(EMAIL_KEY, user.getEmail())
+                .withClaim(VERIFICATION_EMAIL_KEY, user.getEmail())
                 .withIssuer(issuer)
                 .withIssuedAt(Date.from(Instant.now()))
                 .withExpiresAt(Date.from(Instant.now().plusSeconds(1000 + Long.parseLong(expirationInSeconds))))
                 .sign(algorithm);
+    }
+
+    public String generatePasswordResetToken(LocalUser user) {
+        return JWT.create()
+                .withClaim(RESET_PASSWORD_EMAIL_KEY, user.getEmail())
+                .withIssuer(issuer)
+                .withIssuedAt(Date.from(Instant.now()))
+                .withExpiresAt(Date.from(Instant.now().plusSeconds(1000 + 60 * 30)))
+                .sign(algorithm);
+    }
+
+    public String getResetPasswordEmail(String token) {
+        DecodedJWT jwt = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
+        return jwt.getClaim(RESET_PASSWORD_EMAIL_KEY).asString();
     }
 }

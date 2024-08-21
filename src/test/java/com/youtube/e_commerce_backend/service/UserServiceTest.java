@@ -5,11 +5,17 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 import com.youtube.e_commerce_backend.api.model.LoginBody;
 import com.youtube.e_commerce_backend.api.model.RegistrationBody;
+import com.youtube.e_commerce_backend.api.model.ResetPasswordBody;
 import com.youtube.e_commerce_backend.exception.EmailFailureException;
+import com.youtube.e_commerce_backend.exception.EmailNotFoundException;
 import com.youtube.e_commerce_backend.exception.UserAlreadyExistsException;
 import com.youtube.e_commerce_backend.exception.UserNotVerifiedException;
+import com.youtube.e_commerce_backend.model.LocalUser;
 import com.youtube.e_commerce_backend.model.VerificationToken;
+import com.youtube.e_commerce_backend.model.dao.LocalUserDAO;
 import com.youtube.e_commerce_backend.model.dao.VerificationTokenDAO;
+import com.youtube.e_commerce_backend.services.EncryptionService;
+import com.youtube.e_commerce_backend.services.JwtTokenService;
 import com.youtube.e_commerce_backend.services.UserService;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
@@ -40,7 +46,14 @@ public class UserServiceTest {
     @Autowired
     private UserService userService;
     @Autowired
+    private JwtTokenService jwtTokenService;
+    @Autowired
     private VerificationTokenDAO verificationTokenDAO;
+    @Autowired
+    private LocalUserDAO localUserDAO;
+    @Autowired
+    private EncryptionService encryptionService;
+
 
     @Test
     @Transactional
@@ -115,6 +128,32 @@ public class UserServiceTest {
             Assertions.assertTrue(userService.verifyUserEmail(token), "The token should be valid and return true");
             Assertions.assertNotNull(body, "The user should be verified");
         }
+    }
+
+    @Test
+    @Transactional
+    public void testForgotPassword() throws MessagingException {
+        Assertions.assertThrows(EmailNotFoundException.class,
+                () -> userService.forgotPassword("UserNotExist@junit.com"),
+                "This test email should not exist and throw an exception");
+        Assertions.assertDoesNotThrow(() -> userService.forgotPassword("UserA@junit.com"),
+                "Non existing email should not throw an exception");
+        Assertions.assertEquals("UserA@junit.com",
+                greenMail.getReceivedMessages()[0].getRecipients(Message.RecipientType.TO)[0].toString(),
+                "Email should be sent");
+    }
+
+
+    @Test
+    public void testResetPassword() {
+        LocalUser user = localUserDAO.findByUsernameIgnoreCase("UserA").get();
+        String token = jwtTokenService.generatePasswordResetToken(user);
+        ResetPasswordBody body = new ResetPasswordBody();
+        body.setToken(token);
+        body.setPassword("Password12345");
+        userService.resetPassword(body);
+        user = localUserDAO.findByUsernameIgnoreCase("UserA").get();
+        Assertions.assertTrue(encryptionService.verifyPassword("Password12345", user.getPassword()), "Password should be reset");
     }
 
 }
